@@ -5,8 +5,10 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.hackathon.moonfrog.models.HavenApiRequest;
+import org.hackathon.moonfrog.models.LanguageIdentificationResponse;
 import org.hackathon.moonfrog.models.ReviewDetails;
-import org.hackathon.moonfrog.models.SentimentAnalysisRequest;
+import org.hackathon.moonfrog.models.ReviewResponse;
 import org.hackathon.moonfrog.models.SentimentAnalysisResponse;
 import org.hackathon.moonfrog.utilities.HttpClientUtil;
 import org.springframework.http.HttpStatus;
@@ -20,51 +22,103 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/rating")
 public class RatingController {
-	private static final String havenOnDemandUrl = "https://api.havenondemand.com/1/api/sync/analyzesentiment/v1";
+	private String havenOnDemandUrl = "https://api.havenondemand.com/1/api/sync/%s/v1";
 	private static final String apiKey = "058efc09-6378-45d9-b5ac-52ff4c758e90";
 	private static final Logger logger = Logger
 			.getLogger(RatingController.class.getName());
 
 	@RequestMapping(method = RequestMethod.POST)
 	@ResponseStatus(value = HttpStatus.OK)
-	public ResponseEntity<SentimentAnalysisResponse> getType(
+	public ResponseEntity<ReviewResponse> getType(
 			@RequestBody ReviewDetails reviewDetails) {
 
-		SentimentAnalysisResponse serviceResponse = new SentimentAnalysisResponse();
+		ReviewResponse serviceResponse = new ReviewResponse();
 
-		// Make a call to HavenOnDemand for sentiment analysis
-		SentimentAnalysisRequest request = new SentimentAnalysisRequest();
+		// Make a call to HavenOnDemand
+		HavenApiRequest request = new HavenApiRequest();
 		request.setApiKey(apiKey);
 		request.setText(reviewDetails.getReview());
 
 		HttpClientUtil httpClientUtil = new HttpClientUtil();
 		Map<String, String> headers = new HashMap<String, String>();
 		String response;
+
+		// Call language identification api to figure out if reviews are in
+		// english
 		try {
-			response = httpClientUtil.callPostMethod(havenOnDemandUrl, headers,
-					httpClientUtil.writeValueAsString(request),
+			logger.info("Calling havenOnDemand language identification api");
+			response = httpClientUtil.callPostMethod(
+					String.format(havenOnDemandUrl, "identifylanguage"),
+					headers, httpClientUtil.writeValueAsString(request),
+					"application/json", 200);
+
+		} catch (Exception e) {
+			logger.log(Level.WARNING,
+					"Exception while calling language identification api", e);
+			serviceResponse
+					.setError("Exception while calling languageIdentification api");
+			return new ResponseEntity<ReviewResponse>(serviceResponse,
+					HttpStatus.PARTIAL_CONTENT);
+		}
+
+		LanguageIdentificationResponse languageResponse;
+		try {
+			languageResponse = (LanguageIdentificationResponse) httpClientUtil
+					.getObject(response,
+							"org.hackathon.moonfrog.models.LanguageIdentificationResponse");
+
+		} catch (Exception e) {
+			logger.log(Level.WARNING,
+					"Exception while mapping language identification response",
+					e);
+			serviceResponse
+					.setError("Exception while mapping languageIdentification api");
+			return new ResponseEntity<ReviewResponse>(serviceResponse,
+					HttpStatus.PARTIAL_CONTENT);
+		}
+
+		// If review language is not english return
+		if (!languageResponse.getLanguage().equals("english")) {
+			logger.log(Level.INFO, "Language is not english");
+			serviceResponse.setError("Language is "
+					+ languageResponse.getLanguage());
+			return new ResponseEntity<ReviewResponse>(serviceResponse,
+					HttpStatus.PARTIAL_CONTENT);
+		}
+
+		// Call sentiment analysis api
+		try {
+			logger.info("Calling havenOnDemand sentiment analysis api");
+			response = httpClientUtil.callPostMethod(
+					String.format(havenOnDemandUrl, "analyzesentiment"),
+					headers, httpClientUtil.writeValueAsString(request),
 					"application/json", 200);
 		} catch (Exception e) {
 			logger.log(Level.WARNING, "Exception while calling havenOnDemand",
 					e);
-			return new ResponseEntity<SentimentAnalysisResponse>(
-					serviceResponse, HttpStatus.PARTIAL_CONTENT);
+			serviceResponse
+					.setError("Exception while calling sentiment analysis api");
+			return new ResponseEntity<ReviewResponse>(serviceResponse,
+					HttpStatus.PARTIAL_CONTENT);
 		}
 
+		SentimentAnalysisResponse sentimentResponse;
 		try {
-			serviceResponse = (SentimentAnalysisResponse) httpClientUtil
+			sentimentResponse = (SentimentAnalysisResponse) httpClientUtil
 					.getObject(response,
 							"org.hackathon.moonfrog.models.SentimentAnalysisResponse");
 		} catch (Exception e) {
 			logger.log(Level.WARNING,
-					"Exception while mapping havenOnDemand response", e);
-			return new ResponseEntity<SentimentAnalysisResponse>(
-					serviceResponse, HttpStatus.PARTIAL_CONTENT);
+					"Exception while mapping sentiment analysis response", e);
+			serviceResponse
+					.setError("Exception while mapping sentiment analysis api");
+			return new ResponseEntity<ReviewResponse>(serviceResponse,
+					HttpStatus.PARTIAL_CONTENT);
 		}
 
-		logger.info("Reached end");
+		serviceResponse.setSentimentAnalysis(sentimentResponse);
 
-		return new ResponseEntity<SentimentAnalysisResponse>(serviceResponse,
+		return new ResponseEntity<ReviewResponse>(serviceResponse,
 				HttpStatus.OK);
 
 	}

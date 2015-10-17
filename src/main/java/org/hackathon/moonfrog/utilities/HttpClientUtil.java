@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -37,15 +38,13 @@ public class HttpClientUtil {
 	public String callPostMethod(String fullUrl, Map<String, String> headers,
 			String body, String contentType, int statusCode) throws Exception {
 
+		final Logger logger = Logger.getLogger(HttpClientUtil.class.getName());
+
 		HttpPost request = new HttpPost(fullUrl);
 
 		for (String key : headers.keySet()) {
 			request.addHeader(key, headers.get(key));
 		}
-
-		System.out
-				.println("---------------------------------------------------------");
-		System.out.println("Headers: " + headers);
 
 		if (!body.equalsIgnoreCase("")) {
 
@@ -56,14 +55,14 @@ public class HttpClientUtil {
 
 		}
 
+		logger.info(fullUrl);
+
 		StringBuffer responseBufferString = new StringBuffer();
 
 		long startTime = System.currentTimeMillis();
 		HttpResponse response = httpClient.execute(request);
 		long endTime = System.currentTimeMillis();
-
-		System.out.println("Time Taken: " + fullUrl + " : "
-				+ (endTime - startTime) + "(ms)");
+		logger.info("Time taken:" + String.valueOf(endTime - startTime));
 
 		BufferedReader reader = new BufferedReader(new InputStreamReader(
 				response.getEntity().getContent()));
@@ -72,11 +71,6 @@ public class HttpClientUtil {
 		while ((line = reader.readLine()) != null) {
 			responseBufferString.append(line);
 		}
-
-		System.out.println("Response: " + responseBufferString.toString());
-
-		System.out
-				.println("---------------------------------------------------------");
 
 		return responseBufferString.toString();
 
