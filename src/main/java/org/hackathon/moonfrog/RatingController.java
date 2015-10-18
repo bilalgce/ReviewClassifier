@@ -13,6 +13,7 @@ import org.hackathon.moonfrog.models.LanguageIdentificationResponse;
 import org.hackathon.moonfrog.models.ReviewDetails;
 import org.hackathon.moonfrog.models.ReviewResponse;
 import org.hackathon.moonfrog.models.SentimentAnalysisResponse;
+import org.hackathon.moonfrog.models.SentimentAnalysisResponse.Sentiment;
 import org.hackathon.moonfrog.utilities.DBUtil;
 import org.hackathon.moonfrog.utilities.HttpClientUtil;
 import org.springframework.http.HttpStatus;
@@ -134,6 +135,12 @@ public class RatingController {
 
 		double aggregate = serviceResponse.getSentimentAnalysis()
 				.getAggregate().getScore();
+		String negativeSentiments = "";
+		for (Sentiment sentiment : serviceResponse.getSentimentAnalysis()
+				.getNegative()) {
+			negativeSentiments += sentiment.getOriginal_text();
+			negativeSentiments += ",";
+		}
 
 		System.out.println(reviewDetails);
 		System.out.println(reviewDate);
@@ -142,10 +149,21 @@ public class RatingController {
 		DBUtil dbUtil = DBUtil.getInstance();
 		dbUtil.start();
 		dbUtil.insertUserReview(reviewDetails.getReviewerName(), reviewDate,
-				reviewDetails.getRating(), reviewDetails.getReview(), aggregate);
+				reviewDetails.getRating(), reviewDetails.getReview(),
+				aggregate, negativeSentiments);
 		dbUtil.close();
 		return new ResponseEntity<ReviewResponse>(serviceResponse,
 				HttpStatus.OK);
 
 	}
+
+	/*
+	 * @RequestMapping(method = RequestMethod.POST)
+	 * 
+	 * @ResponseStatus(value = HttpStatus.OK) public
+	 * ResponseEntity<ReviewResponse> analyzeReview(
+	 * 
+	 * @RequestBody ReviewDetails reviewDetails) {
+	 */
+
 }

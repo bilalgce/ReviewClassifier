@@ -36,7 +36,7 @@ public class DBUtil {
 	}
 
 	public void insertUserReview(String name, Date reviewDate, int rating,
-			String userReview, double aggregate) {
+			String userReview, double aggregate, String negativeSentiments) {
 		Session session = factory.openSession();
 		Transaction tx = null;
 		try {
@@ -47,6 +47,7 @@ public class DBUtil {
 			reviews.setRating(rating);
 			reviews.setUserReview(userReview);
 			reviews.setAggregate(aggregate);
+			reviews.setNegativeSentiments(negativeSentiments);
 			session.save(reviews);
 			tx.commit();
 
