@@ -20,7 +20,6 @@ public class DBUtil {
 	public static synchronized DBUtil getInstance() {
 		if (dbUtil == null) {
 			dbUtil = new DBUtil();
-			dbUtil.start();
 		}
 		return dbUtil;
 

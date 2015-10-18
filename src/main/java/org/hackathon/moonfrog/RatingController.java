@@ -140,11 +140,10 @@ public class RatingController {
 		System.out.println(aggregate);
 		// Add row to userreviews DB
 		DBUtil dbUtil = DBUtil.getInstance();
-		if (dbUtil == null) 
-			System.out.println("dbutil is null");
+		dbUtil.start();
 		dbUtil.insertUserReview(reviewDetails.getReviewerName(), reviewDate,
 				reviewDetails.getRating(), reviewDetails.getReview(), aggregate);
-
+		dbUtil.close();
 		return new ResponseEntity<ReviewResponse>(serviceResponse,
 				HttpStatus.OK);
 
