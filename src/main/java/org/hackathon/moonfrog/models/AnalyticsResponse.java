@@ -1,12 +1,10 @@
 package org.hackathon.moonfrog.models;
 
-import java.util.List;
-
 import lombok.Data;
 
 @Data
 public class AnalyticsResponse {
-	private List<Review> reviewStats;
+	private int totalReviews;
 	private NegativeSentiments negativeSentiments;
 	
 	@Data

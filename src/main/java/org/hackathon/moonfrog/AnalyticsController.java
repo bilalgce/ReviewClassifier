@@ -31,7 +31,8 @@ public class AnalyticsController {
 			@RequestBody AnalyticsRequest analyticsRequest) {
 
 		AnalyticsResponse response = new AnalyticsResponse();
-
+		response.setTotalReviews(getTotalReviews(analyticsRequest
+				.getNegativeSentiments().getRating()));
 		if (analyticsRequest.getNegativeSentiments() != null) {
 			// Call function to get it from db
 			Map<Double, UserProblems> negativeSentiments = negativeSentiments(analyticsRequest
@@ -102,8 +103,15 @@ public class AnalyticsController {
 	public String dateToMMDDYYYY(Date date) {
 		SimpleDateFormat outputDateFormat = new SimpleDateFormat("MM/dd/YYYY");
 		String s = outputDateFormat.format(date);
-		//Fixing the date format, since it is loaded in DB wrongly
-		return s.substring(1,2) + s.substring(0,1) + s.substring(2);
+		// Fixing the date format, since it is loaded in DB wrongly
+		return s.substring(1, 2) + s.substring(0, 1) + s.substring(2);
+	}
+
+	public int getTotalReviews(int rating) {
+		DBUtil dbUtil = DBUtil.getInstance();
+		dbUtil.start();
+		List<Reviews> reviews = dbUtil.getReviews(rating);
+		return reviews.size();
 	}
 
 }
