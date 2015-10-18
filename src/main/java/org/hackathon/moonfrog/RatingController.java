@@ -82,7 +82,7 @@ public class RatingController {
 		}
 
 		// If review language is not english return
-		if (!languageResponse.getLanguage().equals("english")) {
+		if (languageResponse.getLanguage().equals("hindi")) {
 			logger.log(Level.INFO, "Language is not english");
 			serviceResponse.setError("Language is "
 					+ languageResponse.getLanguage());
