@@ -1,5 +1,8 @@
 package org.hackathon.moonfrog;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -10,6 +13,7 @@ import org.hackathon.moonfrog.models.LanguageIdentificationResponse;
 import org.hackathon.moonfrog.models.ReviewDetails;
 import org.hackathon.moonfrog.models.ReviewResponse;
 import org.hackathon.moonfrog.models.SentimentAnalysisResponse;
+import org.hackathon.moonfrog.utilities.DBUtil;
 import org.hackathon.moonfrog.utilities.HttpClientUtil;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +33,7 @@ public class RatingController {
 
 	@RequestMapping(method = RequestMethod.POST)
 	@ResponseStatus(value = HttpStatus.OK)
-	public ResponseEntity<ReviewResponse> getType(
+	public ResponseEntity<ReviewResponse> analyzeReview(
 			@RequestBody ReviewDetails reviewDetails) {
 
 		ReviewResponse serviceResponse = new ReviewResponse();
@@ -115,8 +119,31 @@ public class RatingController {
 			return new ResponseEntity<ReviewResponse>(serviceResponse,
 					HttpStatus.PARTIAL_CONTENT);
 		}
-
 		serviceResponse.setSentimentAnalysis(sentimentResponse);
+
+		SimpleDateFormat sdf = new SimpleDateFormat("mmddyyyy");
+		Date reviewDate;
+		try {
+			reviewDate = sdf.parse(reviewDetails.getReviewDate());
+		} catch (ParseException e) {
+			logger.log(Level.WARNING, "Exception while mapping review date", e);
+			serviceResponse.setError("Exception while mapping review date");
+			return new ResponseEntity<ReviewResponse>(serviceResponse,
+					HttpStatus.PARTIAL_CONTENT);
+		}
+
+		double aggregate = serviceResponse.getSentimentAnalysis()
+				.getAggregate().getScore();
+
+		System.out.println(reviewDetails);
+		System.out.println(reviewDate);
+		System.out.println(aggregate);
+		// Add row to userreviews DB
+		DBUtil dbUtil = DBUtil.getInstance();
+		if (dbUtil == null) 
+			System.out.println("dbutil is null");
+		dbUtil.insertUserReview(reviewDetails.getReviewerName(), reviewDate,
+				reviewDetails.getRating(), reviewDetails.getReview(), aggregate);
 
 		return new ResponseEntity<ReviewResponse>(serviceResponse,
 				HttpStatus.OK);

@@ -8,8 +8,8 @@ import lombok.Data;
 public class ReviewDetails {
 
 	private String reviewerName;
-	private Date reviewDate;
-	private float rating;
+	private String reviewDate;
+	private int rating;
 	private String review;
 
 }

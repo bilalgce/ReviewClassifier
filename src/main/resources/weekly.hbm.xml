@@ -1,0 +1,16 @@
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping package="org.hackathon.moonfrog.models.db">
+
+	<class name="WeeklyNegativeRatings" table="weekly_negative_ratings">
+	    <id name="id" type="int">
+        	<column name="id" />
+        	<generator class="identity" />
+    	</id>
+	    <property name="week" column="week" />
+		<property name="rating" column="rating" />
+		<property name="negativeReviews" column="negativeReviews" />
+	</class>
+</hibernate-mapping>

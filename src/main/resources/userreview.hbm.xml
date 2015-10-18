@@ -1,0 +1,19 @@
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping package="org.hackathon.moonfrog.models.db">
+
+	<class name="Reviews" table="reviews">
+	    <id name="id" type="int">
+        	<column name="id" />
+        	<generator class="identity" />
+    	</id>
+	    <property name="name" column="name" />
+		<property name="reviewDate" column="review_date" />
+		<property name="rating" column="rating" />
+		<property name="userReview" column="user_review" />
+		<property name="aggregate" column="aggreate" />
+		<property name="negativeSentiments" column="negativeSentiments" />
+	</class>
+</hibernate-mapping>
