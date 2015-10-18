@@ -2,18 +2,24 @@ package org.hackathon.moonfrog;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.hackathon.moonfrog.models.AnalyticsRequest;
+import org.hackathon.moonfrog.models.AnalyticsResponse;
 import org.hackathon.moonfrog.models.HavenApiRequest;
 import org.hackathon.moonfrog.models.LanguageIdentificationResponse;
+import org.hackathon.moonfrog.models.NegativeSentiments;
 import org.hackathon.moonfrog.models.ReviewDetails;
 import org.hackathon.moonfrog.models.ReviewResponse;
 import org.hackathon.moonfrog.models.SentimentAnalysisResponse;
 import org.hackathon.moonfrog.models.SentimentAnalysisResponse.Sentiment;
+import org.hackathon.moonfrog.models.db.Reviews;
 import org.hackathon.moonfrog.utilities.DBUtil;
 import org.hackathon.moonfrog.utilities.HttpClientUtil;
 import org.springframework.http.HttpStatus;
@@ -156,14 +162,5 @@ public class RatingController {
 				HttpStatus.OK);
 
 	}
-
-	/*
-	 * @RequestMapping(method = RequestMethod.POST)
-	 * 
-	 * @ResponseStatus(value = HttpStatus.OK) public
-	 * ResponseEntity<ReviewResponse> analyzeReview(
-	 * 
-	 * @RequestBody ReviewDetails reviewDetails) {
-	 */
 
 }
